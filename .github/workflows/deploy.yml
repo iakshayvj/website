@@ -1,0 +1,41 @@
+name: Deploy Jekyll Site to Spaceship.com
+
+on:
+  push:
+    branches:
+      - main  # Trigger deployment when changes are pushed to the main branch
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Ruby
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.2.0  # Use the Ruby version specified in your .ruby-version or Gemfile
+
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: |
+          gem install bundler
+          bundle install
+
+      # Step 4: Build the Jekyll site
+      - name: Build site
+        run: bundle exec jekyll build
+
+      # Step 5: Deploy to Spaceship.com via FTP
+      - name: Deploy to Spaceship.com
+        uses: SamKirkland/FTP-Deploy-Action@v4
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./_site/  # The folder containing the built site
+          server-dir: /public_html/  # The root directory of your domain on Spaceship.com
